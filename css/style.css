@@ -53,7 +53,6 @@ nav h1 {
 #photo-container {
     width: 90%;
     margin: 0 auto;
-    padding: 2rem;
     display: flex;
     justify-content: space-evenly;
     flex-wrap: wrap;
@@ -107,10 +106,10 @@ p {
 }
 
 
-#pagination button:hover{
+#pagination button:hover, .current{
     transform: translate(-.4px, -.4px);
     transition:.1s;
-    box-shadow: 0px 1px 5px 2px #f46405
+    box-shadow: 0px 1px 5px 2px #af4701
 }
 
 .item:hover {

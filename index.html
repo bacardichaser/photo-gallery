@@ -13,11 +13,12 @@
             <h1>A cute photo gallery</h1>
             <div class="right">
                 <span id="categories">
-                    <select name="categories-ddl" id="categories-ddl">                        
+                    <select name="categories-ddl" id="categories-ddl" onchange="setCategory(this.value)">         
+                        <option value="none" selected>Categories</option>            
                     </select>
                 </span>
                 <span id="search">
-                    <input type="text" id="search-caption" placeholder="Search by caption">
+                    <input type="text" id="search-caption" onkeyup = "timeout(event)" placeholder="Search by caption">
                 </span>
             </div>
         </nav>

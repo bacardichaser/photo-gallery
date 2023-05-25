@@ -84,116 +84,161 @@ let photos = [
         caption: 'Brown bunny',
         category: 'Bunny'
     },
+    {
+        id: 12,
+        src: 'img/rabbit3.jpg',
+        alt: 'portrait bunny',
+        caption: 'Bunny portrait',
+        category: 'Bunny'
+    },
+    {
+        id: 13,
+        src: 'img/rabbit4.jpg',
+        alt: 'brown bunny',
+        caption: 'Brown bunny',
+        category: 'Bunny'
+    },
 ]
-
-let writeInDoc = '';
+let category = document.getElementById('categories-ddl').value;
+let photoContainer = document.getElementById("photo-container");
+let paginationDiv = document.getElementById('pagination');
 let info = document.getElementById('info');
-let categoryArr = [];
-let photoCount = photos.length;
-let pages = photoCount / 4;
-let perPage = 4;
+let timer;
 
-const displayPagBtns = () => {
-    writeInDoc = '';
-    for(let i = 0; i < pages; i++) {
-        writeInDoc += `<button class="page${i}" id="${i}" onClick = "displayPhotos(id)">${i+1}</button>`
-    }
+let photosToDisplay = photos;
+let currentPage = 0;
+let photosPerPage = 4;
+let pages;
 
-    document.getElementById("pagination").innerHTML = writeInDoc;
-}
-displayPagBtns();
-
-const displayPhotos = (page = 0) => {
-    writeInDoc = '';
-        let paginationStart =  page * perPage;
-        let paginationEnd = paginationStart + perPage;
-        let photoArr = photos.slice(paginationStart, paginationEnd);
+const infoDisplay = (display) => {
+    if(display === '') {
+        info.innerText = '';
+        info.style.visibility = 'hidden';
         
-        for(item of photoArr) {
-            writeInDoc += `<div class="item">
-            <img src="${item.src}" alt="${item.alt}">
-            <p class="caption">${item.caption}</p>
-            </div>`
-        }
-    
-    document.getElementById('photo-container').innerHTML = writeInDoc;
-    info.style.visibility = 'hidden';
-    
+    }
+    else {
+        info.innerText = 'No photos to display';
+        info.style.visibility = 'visible';
+        photoContainer.innerHTML = ''
+        paginationDiv.innerHTML = ''
+    }
 }
-displayPhotos();
 
-const displayCategories = () => {
-    writeInDoc = '';
-    writeInDoc += '<option value="0">Categories</option>'
+const updateDom = () => {
+    let paginationStart = currentPage * photosPerPage
+    let paginationEnd = paginationStart + photosPerPage
 
-    for(item of Object.values(photos)) {
-        if(!categoryArr.includes(item.category)){
-            categoryArr.push(item.category);
+    photoContainer.innerHTML = ''
+
+    photosToDisplay.slice(paginationStart,paginationEnd).forEach(photo => {
+        photoContainer.innerHTML +=  `<div class="item">
+        <img src="${photo.src}" alt="${photo.alt}">
+        <p class="caption">${photo.caption}</p>
+        </div>`
+    })
+}
+
+const displayPagination = () => {
+    paginationDiv.innerHTML = ''
+    pages = Math.ceil(photosToDisplay.length / photosPerPage);
+
+    if(pages <= 1) {
+        paginationDiv.innerHTML = ''
+    }
+    else {
+        for(let i = 0; i < pages; i++) {
+            document.getElementById('pagination').innerHTML += `<button class="${!i ? 'current' : '' }" id="${i}" onClick="setPagination(id)">${i+1} </button>`;
         }
     }
+}
 
-    for(category of categoryArr) {
-        writeInDoc += `<option value='${category}'> ${category} </option>`
+const setPagination = (selectedPage) => {
+    currentPage = selectedPage;
+    updateDom();
+
+    let activeButton = document.getElementById(`${selectedPage}`);
+    for(let i = 0; i < pages; i++) {
+        selectedPage != i ? document.getElementById(`${i}`).classList.remove('current') : activeButton.classList.add('current');
+    }
+}
+
+const setPhotoArray = (searchInput = '') => {
+    if(category != 'none') {
+        photosToDisplay = photos.filter(photo => {
+            return photo.category === category
+            }).filter(photo => photo.caption.toUpperCase().includes(searchInput.toUpperCase()))
     }
 
-    document.getElementById('categories-ddl').innerHTML = writeInDoc;
-}
-displayCategories();
+    else {
+        photosToDisplay = photos.filter(photo => {
+            return photo.caption.toUpperCase().includes(searchInput.toUpperCase())
+        })
+    }
 
-const displayPhotosByCategory = (category) => {
-    writeInDoc = '';
-    const photosWithCategory = photos.filter(photo => {
-        return photo.category === category
+    photosToDisplay.length ? infoDisplay('') : infoDisplay('no photos')
+
+    displayPagination();
+    updateDom()
+}
+
+setPhotoArray();
+
+const setSearch = (input) => {
+    console.log(input)
+    let foundCaptions = []
+    currentPage = 0;
+    input.trim();
+
+    if(input === '') {
+        foundCaptions = []
+        photosToDisplay = photos;
+    };
+    
+    foundCaptions = photos.filter(photo => {
+        return photo.caption.toUpperCase().includes(input.toUpperCase())
     })
 
-    for(item of photosWithCategory) {
-        writeInDoc += `<div class="item">
-        <img src="${item.src}" alt="${item.alt}">
-        <p class="caption">${item.caption}</p>
-        </div>`
+    if(foundCaptions.length) {        
+        infoDisplay('')
+        setPhotoArray(input);
     }
-
-    document.getElementById('photo-container').innerHTML = writeInDoc;
-}
-
-const filterByCategories = () => {
-    let selectCategories = document.getElementById('categories-ddl');
-    let optionValue = selectCategories.options[selectCategories.selectedIndex].value;
-
-    if(optionValue === '0') return displayPhotos()
-    displayPhotosByCategory(optionValue)
-
-}
-
-const displayPhotosByCaption = (list) => {
-    writeInDoc = '';
-    for(item of list) {
-        writeInDoc += `<div class="item">
-        <img src="${item.src}" alt="${item.alt}">
-        <p class="caption">${item.caption}</p>
-        </div>`
-        
+    else {
+        infoDisplay('no photos')
+        foundCaptions = []
+        photoContainer.innerHTML = ''
     }
-    document.getElementById('photo-container').innerHTML = writeInDoc;
 }
 
-const searchByCaption = () => {
-    let searchInput = document.getElementById("search-caption").value;
-    info.innerText = '';
-
-    if(!searchInput) return displayPhotos();
+const setCategory = (selectedCategory) => {
+    category = selectedCategory;
+    currentPage = 0;
     
-    const found = photos.filter(photo => {
-        return photo.caption.toUpperCase().includes(searchInput.toUpperCase())
-    });
+    foundCaptions = [];
+    document.getElementById('search-caption').value = '';
 
-    if(found.length) return displayPhotosByCaption(found);
-
-    displayPhotos();
-    info.innerText = `No photos were found`;
-    info.style.visibility = 'visible';
-
+    setPhotoArray();
+    updateDom();  
 }
 
-document.getElementById('categories-ddl').addEventListener('change', filterByCategories);
-document.getElementById('search-caption').addEventListener('keyup', searchByCaption);
+const printCategories = (categories) => {
+    categories.forEach(category => {
+        document.getElementById('categories-ddl').innerHTML += `<option value='${category}'>${category}</option>`
+    })
+}
+
+const getCategories = () => {
+    document.getElementById('categrories-ddl')
+    const categories = [];
+
+    photos.forEach(photo => {
+        if(!categories.includes(photo.category)) categories.push(photo.category)
+    })
+    printCategories(categories)
+}
+getCategories();
+
+
+const timeout = (event) => {
+    clearTimeout(timer);
+    timer = setTimeout(() => {setSearch(event.target.value)}, 750)
+}
